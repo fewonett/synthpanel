@@ -42,25 +42,19 @@ simple_ts_plot <- function(agg_data, demean) {
 }
 
 
+
 #' Create a simple time series plot of the average Y over time by group.
 #'
-#' @param Y The outcome variable.
-#' @param time Time period of the respective data point.
-#' @param group The treatment group of the respective data point.
-#' @param return_data If true, the function will return the aggregated data instead of the plot object.
-#' @param demean If true, Y will be demeaned in period 1.
-#' @return Returns a ggplot object, or the aggregated data if return_data is set to TRUE.
+#' @param data A data frame containing the data.
+#' @param Y The name of the column in `data` that contains the outcome variable (default is `"Y"`).
+#' @param time The name of the column in `data` that contains the time periods (default is `"time"`).
+#' @param group The name of the column in `data` that contains the treatment groups (default is `"group"`).
+#' @param demean Logical. If `TRUE`, the outcome variable Y will be demeaned in period 1 (default is `FALSE`).
+#' @param return_data Logical. If `TRUE`, the function will return the aggregated data instead of the plot object (default is `FALSE`).
+#' @return Returns a ggplot object of the average Y over time by group, or the aggregated data if `return_data` is set to `TRUE`.
 #' @export
 #'
-time_series_plot <- function(Y, time, group, demean = FALSE, return_data = FALSE){
-  required_columns <- c("time", "group", "Y")
-
-  if (!(length(Y) == length(time) && length(time) == length(group))) {
-    stop("All columns must have the same length")
-  }
-
-  # Create df
-  data <- data.frame(Y=Y, time = time, group = group)
+time_series_plot <- function(data,Y = "Y", time = "time", group = "group", demean = FALSE, return_data = FALSE){
 
   # Ensure 'time' and 'Y' are numeric
   if (!is.numeric(data$time)) {
