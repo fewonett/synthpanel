@@ -13,7 +13,7 @@ DGP_full(
   time_of_treatment,
   trend_vectors,
   group_level = NULL,
-  exposure_te = NULL,
+  exposure_list = NULL,
   group_share = "even",
   s_d = 0,
   error_spread = 0
@@ -36,14 +36,16 @@ each group first receives treatment. Never treeated groups are marked with -1.}
 
 \item{trend_vectors}{A list of vectors indicating the time trend for each group.
 Each vector should be of length time_periods, and the list of length group_numbers.
+Alternatively a single vector can be passed - the function will use this time trend for all groups.
 Vectors of common time trends can conveniently be created with the inbuilt trend functions.}
 
 \item{group_level}{The level of Y at time 0. Note that the time trends can also
 introduce a Y level above 0, but the trend fucntions in this package do not.}
 
-\item{exposure_te}{A vector indicating the development of the treatment effect
-after the initial treatment as a fraction of the respective group treatment effect.
-The vector should be of length time_periods - min(time_of_treatment).
+\item{exposure_list}{A vector indicating the development of the treatment effect
+after the initial treatment as a fraction of the respective group treatment effect
+or a list of vectors indicating the development for each group individually.
+Each vector should be of length time_periods - min(time_of_treatment).
 A vector c(1,0.5, 0, 0, (...)) would indicate a treatmente effect of 1* group_te in the
 treatment period, 0.5*group_te in the first period after treatment, and 0 after.}
 

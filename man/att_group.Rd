@@ -4,18 +4,24 @@
 \alias{att_group}
 \title{Calculates the average treatment effect of the treated (ATT)}
 \usage{
-att_group(treatment_effect, group, time)
+att_group(
+  data,
+  treatment_effect = "treatment_effect",
+  group = "group",
+  time = "time"
+)
 }
 \arguments{
-\item{treatment_effect}{The vector of true individual treatment effects as generated
-by the DGP functions.}
+\item{data}{A data frame containing the data.}
 
-\item{group}{The group indicator vector as produced by the DGP functions.}
+\item{treatment_effect}{The name of the column in \code{data} that contains the true individual treatment effects (default \code{"treatment_effect"}).}
 
-\item{time}{The time indicator vector as produced by the DGP functions.}
+\item{group}{The name of the column in \code{data} that contains the group indicators (default \code{"group"}).}
+
+\item{time}{The name of the column in \code{data} that contains the time indicators (default \code{"time"}).}
 }
 \value{
-An integer representing the ATT.
+A numeric value representing the ATT_group.
 }
 \description{
 Calculates the average treatment effect of the treated (ATT)

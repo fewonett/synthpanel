@@ -11,7 +11,7 @@ treatment_dgp_hetero(
   group_share,
   time_of_treatment,
   group_te,
-  exposure_te
+  exposure_list
 )
 }
 \description{

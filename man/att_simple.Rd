@@ -2,20 +2,20 @@
 % Please edit documentation in R/summary_measures.R
 \name{att_simple}
 \alias{att_simple}
-\title{Calculates the ATT_simple}
+\title{Calculates the simple average treatment effect of the treated (ATT_simple)}
 \usage{
-att_simple(treatment_effect, treat)
+att_simple(data, treatment_effect = "treatment_effect", treat = "treat")
 }
 \arguments{
-\item{treatment_effect}{The vector of true individual treatment effects as generated
-by the DGP functions.}
+\item{data}{A data frame containing the data.}
 
-\item{treat}{The treatment indicator: 1 when if respective unit is treated in that
-time perios, 0 otherwise.}
+\item{treatment_effect}{The name of the column in \code{data} that contains the true individual treatment effects (default \code{"treatment_effect"}).}
+
+\item{treat}{The name of the column in \code{data} that indicates whether the unit is treated (1) or not (0) in a given time period (default \code{"treat"}).}
 }
 \value{
-An integer representing the ATT_simple.
+A numeric value representing the ATT_simple.
 }
 \description{
-Calculates the ATT_simple
+Calculates the simple average treatment effect of the treated (ATT_simple)
 }

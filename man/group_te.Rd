@@ -4,15 +4,21 @@
 \alias{group_te}
 \title{Calculates the true treatment effect on a group level}
 \usage{
-group_te(treatment_effect, group, time)
+group_te(
+  data,
+  treatment_effect = "treatment_effect",
+  group = "group",
+  time = "time"
+)
 }
 \arguments{
-\item{treatment_effect}{The vector of true individual treatment effects as generated
-by the DGP functions.}
+\item{data}{A data frame containing the data.}
 
-\item{group}{The group indicator vector as produced by the DGP functions.}
+\item{treatment_effect}{The name of the column in \code{data} that contains the true individual treatment effects (default \code{"treatment_effect"}).}
 
-\item{time}{The time indicator vector as produced by the DGP functions.}
+\item{group}{The name of the column in \code{data} that contains the group indicators (default \code{"group"}).}
+
+\item{time}{The name of the column in \code{data} that contains the time indicators (default \code{"time"}).}
 }
 \value{
 A data frame that presents mean treatment effect by group.
