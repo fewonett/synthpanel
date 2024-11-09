@@ -187,7 +187,6 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
     trend_vectors <- replicate(group_number, trend_vectors, simplify = FALSE)
   }
 
-  }
   if (!is.list(trend_vectors) || length(trend_vectors) != group_number) {
     stop("The parameter 'trend_vectors' must be a vector of length time_periods or a list containing one such vector for each group.")
   }
