@@ -126,6 +126,7 @@ error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_
 #' The default "even" will create equally sized groups.
 #' @param trend_vectors A list of vectors indicating the time trend for each group.
 #' Each vector should be of length time_periods, and the list of length group_numbers.
+#' Alternatively a single vector can be passed - the function will use this time trend for all groups.
 #' Vectors of common time trends can conveniently be created with the inbuilt trend functions.
 #' @param time_of_treatment A vector of length group_number, indicating in which period
 #' each group first receives treatment. Never treeated groups are marked with -1.
@@ -185,8 +186,10 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
   if ((is.vector(trend_vectors))&length(trend_vectors) == time_periods){
     trend_vectors <- replicate(group_number, trend_vectors, simplify = FALSE)
   }
+
+  }
   if (!is.list(trend_vectors) || length(trend_vectors) != group_number) {
-    stop("The parameter 'trend_vectors' must be a list of length equal to 'group_number'.")
+    stop("The parameter 'trend_vectors' must be a vector of length time_periods or a list containing one such vector for each group.")
   }
 
   for (i in seq_along(trend_vectors)) {
