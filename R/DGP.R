@@ -182,7 +182,9 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
   if (any(time_of_treatment > time_periods)) {
     stop("Elements in 'time_of_treatment' cannot be greater than 'time_periods'.")
   }
-
+  if ((is.vector(trend_vectors))&length(trend_vectors) == time_periods){
+    trend_vectors <- replicate(group_number, trend_vectors, simplify = FALSE)
+  }
   if (!is.list(trend_vectors) || length(trend_vectors) != group_number) {
     stop("The parameter 'trend_vectors' must be a list of length equal to 'group_number'.")
   }
