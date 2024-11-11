@@ -226,9 +226,7 @@ get_cs <- function(data, Y, first_treat, time, unit, control ="notyettreated",
                           gname = first_treat,
                           data = data,
                           clustervars = c(cluster_by),
-                          base_period = "varying",
-                          control_group = control,
-                          cband = FALSE)
+                          control_group = control)
 
     agg <- did::aggte(cs_res, type = aggregation)
   })["elapsed"]
