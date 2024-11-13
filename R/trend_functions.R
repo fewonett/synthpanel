@@ -44,7 +44,8 @@ trend_linear <- function(time_periods, slope) {
 trend_linear_noisy <- function(time_periods, slope, noise_mean, noise_sd){
   noise_term <- stats::rnorm(time_periods, noise_mean, noise_sd)
   time_series <- slope * c(1:time_periods)
-  return(time_series + noise_term)
+  trend <- time_series + noise_term
+  return(trend)
 }
 
 
