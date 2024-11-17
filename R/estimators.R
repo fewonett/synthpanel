@@ -75,16 +75,21 @@ get_sunab <- function (data, Y, first_treat, time , unit, cluster_by = NA, weigh
 
 #' @export
 get_chaise <- function(data, Y, treat, time, unit, group, weights = NA){
-
+  # get first period in which anyone is treated:
+  first_t <- data %>%
+    dplyr::filter(.data[[treat]] == 1) %>%      # Filter rows where treat == 1
+    dplyr::slice_min(.data[[time]])             # Select the row with the minimum time value
+  first_t <- min(first_t[[time]])
+  number_effects <- max(data[[time]]) - first_t +1
 
   if(is.na(weights)){
 
     runtime <- system.time({
-      chaise <- DIDmultiplegtDYN::did_multiplegt_dyn(data, Y, unit, time, treat, 99)
+      chaise <- DIDmultiplegtDYN::did_multiplegt_dyn(data, Y, unit, time, treat, effects = number_effects, graph_off = TRUE)
     })["elapsed"]
   }else{
     runtime <- system.time({
-      chaise <- DIDmultiplegtDYN::did_multiplegt_dyn(data, Y, unit, time, treat, 99, weight = weights)
+      chaise <- DIDmultiplegtDYN::did_multiplegt_dyn(data, Y, unit, time, treat, effects = number_effects, weight = weights, graph_off = TRUE)
     })["elapsed"]
   }
   runtime <- as.numeric(runtime)
@@ -221,9 +226,7 @@ get_cs <- function(data, Y, first_treat, time, unit, control ="notyettreated",
                           gname = first_treat,
                           data = data,
                           clustervars = c(cluster_by),
-                          base_period = "varying",
-                          control_group = control,
-                          cband = FALSE)
+                          control_group = control)
 
     agg <- did::aggte(cs_res, type = aggregation)
   })["elapsed"]
@@ -351,8 +354,7 @@ get_all_ests <- function(data,
   }
 
 
-  rm(twfe, borus, csa, chaise, gardner, sunab, wool, data, res_list)
-  gc()
+
   return(res)
 }
 

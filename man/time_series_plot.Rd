@@ -4,21 +4,30 @@
 \alias{time_series_plot}
 \title{Create a simple time series plot of the average Y over time by group.}
 \usage{
-time_series_plot(Y, time, group, demean = FALSE, return_data = FALSE)
+time_series_plot(
+  data,
+  Y = "Y",
+  time = "time",
+  group = "group",
+  demean = FALSE,
+  return_data = FALSE
+)
 }
 \arguments{
-\item{Y}{The outcome variable.}
+\item{data}{A data frame containing the data.}
 
-\item{time}{Time period of the respective data point.}
+\item{Y}{The name of the column in \code{data} that contains the outcome variable (default is \code{"Y"}).}
 
-\item{group}{The treatment group of the respective data point.}
+\item{time}{The name of the column in \code{data} that contains the time periods (default is \code{"time"}).}
 
-\item{demean}{If true, Y will be demeaned in period 1.}
+\item{group}{The name of the column in \code{data} that contains the treatment groups (default is \code{"group"}).}
 
-\item{return_data}{If true, the function will return the aggregated data instead of the plot object.}
+\item{demean}{Logical. If \code{TRUE}, the outcome variable Y will be demeaned in period 1 (default is \code{FALSE}).}
+
+\item{return_data}{Logical. If \code{TRUE}, the function will return the aggregated data instead of the plot object (default is \code{FALSE}).}
 }
 \value{
-Returns a ggplot object, or the aggregated data if return_data is set to TRUE.
+Returns a ggplot object of the average Y over time by group, or the aggregated data if \code{return_data} is set to \code{TRUE}.
 }
 \description{
 Create a simple time series plot of the average Y over time by group.

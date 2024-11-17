@@ -5,12 +5,12 @@
 #' @keywords Internal
 #'
 treatment_dgp_hetero <- function(number_observations, time_periods, group_number,
-                                 group_share, time_of_treatment, group_te, exposure_te)
+                                 group_share, time_of_treatment, group_te, exposure_list)
   {
   # Assign groups based on group_share
 
   groups <- rep(1:group_number, group_share)
-  exposure_te <- c(0,exposure_te)
+  exposure_list <- lapply(exposure_list, function(x) c(0, x))
   # Create data frame
   treatment_matrix <- data.frame(
     unit = rep(1:number_observations, each = time_periods),
@@ -30,6 +30,7 @@ treatment_dgp_hetero <- function(number_observations, time_periods, group_number
     group_indices <- treatment_matrix$group == g
     treatment_start <- time_of_treatment[g]
     treatment_matrix$time_of_treatment[treatment_matrix$group == g] <- time_of_treatment[g]
+    exposure_te <- exposure_list[[g]]
     if (treatment_start != -1) {
       treatment_matrix$exposure[treatment_matrix$group ==g] <-
         ifelse(treatment_matrix$time[treatment_matrix$group ==g] - time_of_treatment[g] >= 0,
@@ -116,9 +117,10 @@ error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_
 #' a distinct combination of treatment time and time trend.
 #' @param group_te A vector indicating the treatment effect size for each group.
 #' The length should equal the number of groups.
-#' @param exposure_te A vector indicating the development of the treatment effect
-#' after the initial treatment as a fraction of the respective group treatment effect.
-#' The vector should be of length time_periods - min(time_of_treatment).
+#' @param exposure_list A vector indicating the development of the treatment effect
+#' after the initial treatment as a fraction of the respective group treatment effect
+#' or a list of vectors indicating the development for each group individually.
+#' Each vector should be of length time_periods - min(time_of_treatment).
 #' A vector c(1,0.5, 0, 0, (...)) would indicate a treatmente effect of 1* group_te in the
 #' treatment period, 0.5*group_te in the first period after treatment, and 0 after.
 #' @param group_share A list of length group_number, which indicates how many obsevations
@@ -126,6 +128,7 @@ error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_
 #' The default "even" will create equally sized groups.
 #' @param trend_vectors A list of vectors indicating the time trend for each group.
 #' Each vector should be of length time_periods, and the list of length group_numbers.
+#' Alternatively a single vector can be passed - the function will use this time trend for all groups.
 #' Vectors of common time trends can conveniently be created with the inbuilt trend functions.
 #' @param time_of_treatment A vector of length group_number, indicating in which period
 #' each group first receives treatment. Never treeated groups are marked with -1.
@@ -136,7 +139,7 @@ error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_
 #' via the trend functions.
 
 DGP_full <- function(number_observations, time_periods, group_number, group_te, time_of_treatment,
-                    trend_vectors, group_level = NULL, exposure_te = NULL, group_share = "even",
+                    trend_vectors, group_level = NULL, exposure_list = NULL, group_share = "even",
                      s_d = 0, error_spread = 0) {
 
 # Error handling for invalid inputs and transformation of default values:
@@ -182,9 +185,12 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
   if (any(time_of_treatment > time_periods)) {
     stop("Elements in 'time_of_treatment' cannot be greater than 'time_periods'.")
   }
+  if ((!is.list(trend_vectors))&length(trend_vectors) == group_number){
+    trend_vectors <- replicate(group_number, trend_vectors, simplify = FALSE)
+  }
 
   if (!is.list(trend_vectors) || length(trend_vectors) != group_number) {
-    stop("The parameter 'trend_vectors' must be a list of length equal to 'group_number'.")
+    stop("The parameter 'trend_vectors' must be a vector of length time_periods or a list containing one such vector for each group.")
   }
 
   for (i in seq_along(trend_vectors)) {
@@ -194,13 +200,24 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
   }
 
   max_length = time_periods - min(time_of_treatment[time_of_treatment>0]) + 1
-  if(is.null(exposure_te)){
+  if(is.null(exposure_list)){
     exposure_te = rep(1, max_length)
+    exposure_list <- replicate(group_number, exposure_te, simplify = FALSE)
+  }
+  else if(is.vector(exposure_list)&length(exposure_list) == max_length){
+    exposure_list <- replicate(group_number, exposure_list, simplify = FALSE)
   }
 
-  else if ((!is.numeric(exposure_te) || !is.vector(exposure_te) || length(exposure_te) != max_length)){
-    stop("Exposure_te is not a numeric vector of length (time_periods - earliest time of treatment) + 1")
+  if ((!is.list(exposure_list) || length(exposure_list) != group_number)){
+    stop("Exposure_te must be a list of vectors for each group or an individual vector")
   }
+  for (i in seq_along(exposure_list)) {
+    if (!is.numeric(exposure_list[[i]]) || length(exposure_list[[i]]) != max_length) {
+      stop(paste0("Each element in 'exposure_list' must be a numeric vector of length equal to
+                  time_periods - first treatment time + 1. Element at index ", i, " is invalid."))
+    }
+  }
+
 
   if(is.null(group_level)){
     group_level = rep(0, group_number)
@@ -219,7 +236,7 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
   # Actual function begins here
   treatment_matrix <- treatment_dgp_hetero(number_observations, time_periods,
                                            group_number, group_share, time_of_treatment,
-                                           group_te, exposure_te)
+                                           group_te, exposure_list)
 
   group_vector_long <- treatment_matrix$group
   unit_vector <- unit_dgp_base(number_observations, time_periods, trend_vectors,

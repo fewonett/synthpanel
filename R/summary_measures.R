@@ -4,35 +4,32 @@
 #'
 #' @export
 #'
-#' @param treatment_effect The vector of true individual treatment effects as generated
-#' by the DGP functions.
-#' @param group The group indicator vector as produced by the DGP functions.
-#' @param time The time indicator vector as produced by the DGP functions.
+#' @param data A data frame containing the data.
+#' @param treatment_effect The name of the column in `data` that contains the true individual treatment effects (default `"treatment_effect"`).
+#' @param group The name of the column in `data` that contains the group indicators (default `"group"`).
+#' @param time The name of the column in `data` that contains the time indicators (default `"time"`).
 #' @return A data frame that presents mean treatment effect by time x group.
-
-group_time_te <- function(treatment_effect, group, time){
+group_time_te <- function(data, treatment_effect = "treatment_effect", group ="group",time ="time"){
   # Check inputs
-  a <- data.frame(treatment_effect = treatment_effect, time = time, group = group)
-  b <- a %>%
-    dplyr::group_by(group, time) %>%
-    dplyr::summarise(mean_te = mean(treatment_effect))
-  return(b)
+  attgt <- data %>%
+    dplyr::group_by(.data[[group]], .data[[time]]) %>%
+    dplyr::summarise(mean_te = mean(.data[[treatment_effect]]))
+  return(attgt)
 
 }
+
 
 #' Calculates the true treatment effect on a group level
 #'
 #' @export
 #'
-#' @param treatment_effect The vector of true individual treatment effects as generated
-#' by the DGP functions.
-#' @param group The group indicator vector as produced by the DGP functions.
-#' @param time The time indicator vector as produced by the DGP functions.
+#' @param data A data frame containing the data.
+#' @param treatment_effect The name of the column in `data` that contains the true individual treatment effects (default `"treatment_effect"`).
+#' @param group The name of the column in `data` that contains the group indicators (default `"group"`).
+#' @param time The name of the column in `data` that contains the time indicators (default `"time"`).
 #' @return A data frame that presents mean treatment effect by group.
-
-
-group_te <- function(treatment_effect, group, time){
-  te_time_group <- group_time_te(treatment_effect, group, time)
+group_te <- function(data, treatment_effect = "treatment_effect", group ="group",time ="time"){
+  te_time_group <- group_time_te(data, treatment_effect, group, time)
   # Remove rows with mean_te 0, in treatment groups
   te_time_group <- te_time_group %>%
     dplyr::group_by(.data$group) %>%
@@ -50,16 +47,15 @@ group_te <- function(treatment_effect, group, time){
 #'
 #' @export
 #'
-#' @param treatment_effect The vector of true individual treatment effects as generated
-#' by the DGP functions.
-#' @param group The group indicator vector as produced by the DGP functions.
-#' @param time The time indicator vector as produced by the DGP functions.
-#' @return An integer representing the ATT.
-
-att_group <- function(treatment_effect, group, time){
-  group_count <- as.data.frame(table(group))
+#' @param data A data frame containing the data.
+#' @param treatment_effect The name of the column in `data` that contains the true individual treatment effects (default `"treatment_effect"`).
+#' @param group The name of the column in `data` that contains the group indicators (default `"group"`).
+#' @param time The name of the column in `data` that contains the time indicators (default `"time"`).
+#' @return A numeric value representing the ATT_group.
+att_group <- function(data, treatment_effect = "treatment_effect", group ="group",time ="time"){
+  group_count <- as.data.frame(table(data[[group]]))
   colnames(group_count)[1] <- "group"
-  group_te_table <- group_te(treatment_effect, group, time)
+  group_te_table <- group_te(data, treatment_effect, group, time)
   # Remove groups with mean_te == 0
   group_te_table <- group_te_table[group_te_table$mean_te != 0,]
   # Merge the group counts:
@@ -69,22 +65,20 @@ att_group <- function(treatment_effect, group, time){
   return(ATT)
 }
 
-#' Calculates the ATT_simple
+#' Calculates the simple average treatment effect of the treated (ATT_simple)
+#'
 #' @export
 #'
-#' @param treatment_effect The vector of true individual treatment effects as generated
-#' by the DGP functions.
-#' @param treat The treatment indicator: 1 when if respective unit is treated in that
-#' time perios, 0 otherwise.
-#' @return An integer representing the ATT_simple.
+#' @param data A data frame containing the data.
+#' @param treatment_effect The name of the column in `data` that contains the true individual treatment effects (default `"treatment_effect"`).
+#' @param treat The name of the column in `data` that indicates whether the unit is treated (1) or not (0) in a given time period (default `"treat"`).
+#' @return A numeric value representing the ATT_simple.
+att_simple <- function(data, treatment_effect = "treatment_effect", treat = "treat"){
 
-att_simple <- function(treatment_effect, treat){
-
-  att_frame <- data.frame(treatment_effect = treatment_effect, treat = treat)
   # Remove untreated units
-  att_frame <- att_frame %>%
-    dplyr::filter(.data$treat == 1)
-  att_simple <- mean(att_frame$treatment_effect)
+  att_frame <- data %>%
+    dplyr::filter(.data[[treat]] == 1)
+  att_simple <- mean(att_frame[[treatment_effect]])
   return(att_simple)
 }
 
