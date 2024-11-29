@@ -5,52 +5,63 @@
 #' @keywords Internal
 #'
 treatment_dgp_hetero <- function(number_observations, time_periods, group_number,
-                                 group_share, time_of_treatment, group_te, exposure_list)
-  {
-  # Assign groups based on group_share
+                                 group_share, time_of_treatment, group_te, exposure_list) {
 
   groups <- rep(1:group_number, group_share)
-  exposure_list <- lapply(exposure_list, function(x) c(0, x))
-  # Create data frame
+
   treatment_matrix <- data.frame(
     unit = rep(1:number_observations, each = time_periods),
     time = rep(1:time_periods, number_observations),
-    group = rep(groups, each = time_periods),
-    treat = 0,
-    ever_treat = 0,
-    treatment_effect = 0,
-    group_te = 0,
-    time_of_treatment = -1,
-    exposure = 0
+    group = rep(groups, each = time_periods)
   )
 
-  # Assign treatment and ever_treat based on group and time_of_treatment
+  group_indices <- treatment_matrix$group
 
-  for (g in 1:group_number) {
-    group_indices <- treatment_matrix$group == g
-    treatment_start <- time_of_treatment[g]
-    treatment_matrix$time_of_treatment[treatment_matrix$group == g] <- time_of_treatment[g]
-    exposure_te <- exposure_list[[g]]
-    if (treatment_start != -1) {
-      treatment_matrix$exposure[treatment_matrix$group ==g] <-
-        ifelse(treatment_matrix$time[treatment_matrix$group ==g] - time_of_treatment[g] >= 0,
-               treatment_matrix$time[treatment_matrix$group ==g] + 1 - time_of_treatment[g], 0)
-      treatment_matrix$treat[group_indices & treatment_matrix$time >= treatment_start] <- 1
-      treatment_matrix$ever_treat[group_indices] <- 1
-      treatment_matrix$group_te[group_indices & treatment_matrix$time >= treatment_start] <- group_te[g]
-      # Introduce variation in group te by exposure
-      treatment_matrix$group_te[group_indices & treatment_matrix$time >= treatment_start] <-
-        treatment_matrix$group_te[group_indices & treatment_matrix$time >= treatment_start] *
-        exposure_te[treatment_matrix$exposure[group_indices & treatment_matrix$time >=
-                                                treatment_start]+1]
-    }
-  }
+  # Create full length time of treatment and group treatment effect vectors
+  treatment_start_vec <- time_of_treatment[group_indices]
+  group_te_vec <- group_te[group_indices]
+  treatment_matrix$time_of_treatment <- treatment_start_vec
 
+  is_treated <- treatment_start_vec != -1
+  time_since_treatment <- treatment_matrix$time - treatment_start_vec
+  # Create exposure vector
+  exposure_periods <- ifelse(is_treated & time_since_treatment >= 0, time_since_treatment + 1, 0)
 
-  treatment_matrix$treatment_effect <- treatment_matrix$group_te
+  # Shorten length of exposure vectors for later treated groups to correct length
+  group_exposure_lengths <- sapply(exposure_list, length)
+  capped_exposure_periods <- pmin(exposure_periods, group_exposure_lengths[group_indices])
+  max_exposure_length <- max(group_exposure_lengths)
+
+  # Fill shortened values with 0
+  exposure_vectors_padded <- lapply(exposure_list, function(x) {
+    length(x) <- max_exposure_length
+    x[is.na(x)] <- 0
+    return(x)
+  })
+
+  exposure_matrix <- do.call(cbind, exposure_vectors_padded)
+  exposure_factors <- numeric(nrow(treatment_matrix))
+
+  # Gather indices
+  exposure_positive <- exposure_periods > 0
+  exposure_indices <- capped_exposure_periods[exposure_positive]
+  group_indices_positive <- group_indices[exposure_positive]
+
+  # Create vector of exposure factors
+  exposure_factors[exposure_positive] <- exposure_matrix[cbind(exposure_indices, group_indices_positive)]
+
+  # Calculate and assign full treatement effect:
+  adjusted_group_te <- group_te_vec * exposure_factors
+  treatment_matrix$treatment_effect <- adjusted_group_te
+
+  # Assign variables to the matrix
+  treatment_matrix$exposure <- exposure_periods
+  treatment_matrix$treat <- as.integer(is_treated & treatment_matrix$time >= treatment_start_vec)
+  treatment_matrix$ever_treat <- as.integer(is_treated)
 
   return(treatment_matrix)
 }
+
 
 
 
