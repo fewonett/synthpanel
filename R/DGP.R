@@ -90,19 +90,22 @@ error_dgp_base <- function(number_observations, time_periods, s_d) {
   return(error_vector)
 }
 
-error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_dist = "uniform", error_spread = 0){
-  if(spread_dist == "uniform"){
-  initial_spread <- stats::runif(number_observations, -error_spread, error_spread)
-  }
-  if (spread_dist == "normal"){
-    initial_spread <- stats::rnorm(number_observations, 0, error_spread)
-  }
+
+# Simulate error with unit serial correlation:
+error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_dist = "uniform",
+                             error_spread = 0) {
+  initial_spread <- switch(
+    spread_dist,
+    "uniform" = stats::runif(number_observations, -error_spread, error_spread),
+    "normal" = stats::rnorm(number_observations, 0, error_spread),
+    stop("Invalid spread_dist value")
+  )
+
   error_matrix <- error_dgp_base(number_observations, time_periods, s_d)
-  error_matrix <- error_matrix %>%
-    dplyr::mutate(error = .data$error + initial_spread[.data$unit])
+  error_matrix$error <- error_matrix$error + initial_spread[error_matrix$unit]
+
   return(error_matrix)
 }
-
 
 
 #' A flexible DGP function to generate panel data with differing time trends and treatment

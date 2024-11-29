@@ -25,7 +25,7 @@ aggregate_plot_data <- function(data) {
 
 #' @keywords Internal
 sum_matrices <- function(treatment_matrix, unit_vector, error_vector) {
-  # Combine data frames using cbind with drop = FALSE to preserve data frames
+  # Combine data frames using cbind with drop = FALSE to preserve names
   final_matrix <- cbind(
     treatment_matrix,
     unit_vector[ , setdiff(names(unit_vector), c("unit", "time", "group")), drop = FALSE ],
