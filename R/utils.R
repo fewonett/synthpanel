@@ -25,8 +25,12 @@ aggregate_plot_data <- function(data) {
 
 #' @keywords Internal
 sum_matrices <- function(treatment_matrix, unit_vector, error_vector) {
-  final_matrix <- merge(treatment_matrix, unit_vector, by = c("unit", "time"))
-  final_matrix <- merge(final_matrix, error_vector, by = c("unit", "time"))
+  # Combine data frames using cbind with drop = FALSE to preserve names
+  final_matrix <- cbind(
+    treatment_matrix,
+    unit_vector[ , setdiff(names(unit_vector), c("unit", "time", "group")), drop = FALSE ],
+    error_vector[ , setdiff(names(error_vector), c("unit", "time")), drop = FALSE ]
+  )
 
   # Adjust Y by adding treatment_effect and error
   final_matrix$Y <- final_matrix$Y + final_matrix$treatment_effect + final_matrix$error

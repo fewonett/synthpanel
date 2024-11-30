@@ -4,59 +4,70 @@
 #' Create a treatment vector, depending on time, group, and exposure.
 #' @keywords Internal
 #'
-treatment_dgp_hetero <- function(number_observations, time_periods, group_number,
-                                 group_share, time_of_treatment, group_te, exposure_list)
-  {
-  # Assign groups based on group_share
+treatment_dgp_hetero <- function(number_units, time_periods, group_number,
+                                 group_share, time_of_treatment, group_te, exposure_list) {
 
   groups <- rep(1:group_number, group_share)
-  exposure_list <- lapply(exposure_list, function(x) c(0, x))
-  # Create data frame
+
   treatment_matrix <- data.frame(
-    unit = rep(1:number_observations, each = time_periods),
-    time = rep(1:time_periods, number_observations),
-    group = rep(groups, each = time_periods),
-    treat = 0,
-    ever_treat = 0,
-    treatment_effect = 0,
-    group_te = 0,
-    time_of_treatment = -1,
-    exposure = 0
+    unit = rep(1:number_units, each = time_periods),
+    time = rep(1:time_periods, number_units),
+    group = rep(groups, each = time_periods)
   )
 
-  # Assign treatment and ever_treat based on group and time_of_treatment
+  group_indices <- treatment_matrix$group
 
-  for (g in 1:group_number) {
-    group_indices <- treatment_matrix$group == g
-    treatment_start <- time_of_treatment[g]
-    treatment_matrix$time_of_treatment[treatment_matrix$group == g] <- time_of_treatment[g]
-    exposure_te <- exposure_list[[g]]
-    if (treatment_start != -1) {
-      treatment_matrix$exposure[treatment_matrix$group ==g] <-
-        ifelse(treatment_matrix$time[treatment_matrix$group ==g] - time_of_treatment[g] >= 0,
-               treatment_matrix$time[treatment_matrix$group ==g] + 1 - time_of_treatment[g], 0)
-      treatment_matrix$treat[group_indices & treatment_matrix$time >= treatment_start] <- 1
-      treatment_matrix$ever_treat[group_indices] <- 1
-      treatment_matrix$group_te[group_indices & treatment_matrix$time >= treatment_start] <- group_te[g]
-      # Introduce variation in group te by exposure
-      treatment_matrix$group_te[group_indices & treatment_matrix$time >= treatment_start] <-
-        treatment_matrix$group_te[group_indices & treatment_matrix$time >= treatment_start] *
-        exposure_te[treatment_matrix$exposure[group_indices & treatment_matrix$time >=
-                                                treatment_start]+1]
-    }
-  }
+  # Create full length time of treatment and group treatment effect vectors
+  treatment_start_vec <- time_of_treatment[group_indices]
+  group_te_vec <- group_te[group_indices]
+  treatment_matrix$time_of_treatment <- treatment_start_vec
 
+  is_treated <- treatment_start_vec != -1
+  time_since_treatment <- treatment_matrix$time - treatment_start_vec
+  # Create exposure vector
+  exposure_periods <- ifelse(is_treated & time_since_treatment >= 0, time_since_treatment + 1, 0)
 
-  treatment_matrix$treatment_effect <- treatment_matrix$group_te
+  # Shorten length of exposure vectors for later treated groups to correct length
+  group_exposure_lengths <- sapply(exposure_list, length)
+  capped_exposure_periods <- pmin(exposure_periods, group_exposure_lengths[group_indices])
+  max_exposure_length <- max(group_exposure_lengths)
+
+  # Fill shortened values with 0
+  exposure_vectors_padded <- lapply(exposure_list, function(x) {
+    length(x) <- max_exposure_length
+    x[is.na(x)] <- 0
+    return(x)
+  })
+
+  exposure_matrix <- do.call(cbind, exposure_vectors_padded)
+  exposure_factors <- numeric(nrow(treatment_matrix))
+
+  # Gather indices
+  exposure_positive <- exposure_periods > 0
+  exposure_indices <- capped_exposure_periods[exposure_positive]
+  group_indices_positive <- group_indices[exposure_positive]
+
+  # Create vector of exposure factors
+  exposure_factors[exposure_positive] <- exposure_matrix[cbind(exposure_indices, group_indices_positive)]
+
+  # Calculate and assign full treatement effect:
+  adjusted_group_te <- group_te_vec * exposure_factors
+  treatment_matrix$treatment_effect <- adjusted_group_te
+
+  # Assign variables to the matrix
+  treatment_matrix$exposure <- exposure_periods
+  treatment_matrix$treat <- as.integer(is_treated & treatment_matrix$time >= treatment_start_vec)
+  treatment_matrix$ever_treat <- as.integer(is_treated)
 
   return(treatment_matrix)
 }
 
 
 
+
 #' Creates a small dataframe that allocates units into groups and adds the time trends
 #' @keywords Internal
-unit_dgp_base <- function(number_observations, time_periods, trend_vectors, group_vector_long,
+unit_dgp_base <- function(number_units, time_periods, trend_vectors, group_vector_long,
                           group_level, group_share) {
   # Generate Y values based on the trend_vector
   group_number <- length(unique(group_vector_long))
@@ -69,40 +80,43 @@ unit_dgp_base <- function(number_observations, time_periods, trend_vectors, grou
   group_level_vector <- group_level[group_vector_long]
 
   unit_vector <- data.frame(
-    unit = rep(1:number_observations, each = time_periods),
-    time = rep(1:time_periods, number_observations),
+    unit = rep(1:number_units, each = time_periods),
+    time = rep(1:time_periods, number_units),
     Y = Y + group_level_vector
   )
 
   return(unit_vector)
 }
 
-error_dgp_base <- function(number_observations, time_periods, s_d) {
+error_dgp_base <- function(number_units, time_periods, s_d) {
   # Generate error term from normal distribution
-  error <- stats::rnorm(number_observations * time_periods, mean = 0, sd = s_d)
+  error <- stats::rnorm(number_units * time_periods, mean = 0, sd = s_d)
 
   error_vector <- data.frame(
-    unit = rep(1:number_observations, each = time_periods),
-    time = rep(1:time_periods, number_observations),
+    unit = rep(1:number_units, each = time_periods),
+    time = rep(1:time_periods, number_units),
     error = error
   )
 
   return(error_vector)
 }
 
-error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_dist = "uniform", error_spread = 0){
-  if(spread_dist == "uniform"){
-  initial_spread <- stats::runif(number_observations, -error_spread, error_spread)
-  }
-  if (spread_dist == "normal"){
-    initial_spread <- stats::rnorm(number_observations, 0, error_spread)
-  }
-  error_matrix <- error_dgp_base(number_observations, time_periods, s_d)
-  error_matrix <- error_matrix %>%
-    dplyr::mutate(error = .data$error + initial_spread[.data$unit])
+
+# Simulate error with unit serial correlation:
+error_dgp_spread <- function(number_units, time_periods, s_d = 1, spread_dist = "uniform",
+                             error_spread = 0) {
+  initial_spread <- switch(
+    spread_dist,
+    "uniform" = stats::runif(number_units, -error_spread, error_spread),
+    "normal" = stats::rnorm(number_units, 0, error_spread),
+    stop("Invalid spread_dist value")
+  )
+
+  error_matrix <- error_dgp_base(number_units, time_periods, s_d)
+  error_matrix$error <- error_matrix$error + initial_spread[error_matrix$unit]
+
   return(error_matrix)
 }
-
 
 
 #' A flexible DGP function to generate panel data with differing time trends and treatment
@@ -110,7 +124,7 @@ error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_
 #'
 #' @export
 #'
-#' @param number_observations The number of observations in the dataset.
+#' @param number_units The number of observations in the dataset.
 #' @param time_periods The number of time periods over which the observations are
 #' observed.
 #' @param group_number The number of groups in the sample. A group corresponds to
@@ -138,13 +152,13 @@ error_dgp_spread <- function(number_observations, time_periods, s_d = 1, spread_
 #' is drawn from. Note this is independent of group level noise, which may be introduced
 #' via the trend functions.
 
-DGP_full <- function(number_observations, time_periods, group_number, group_te, time_of_treatment,
+DGP_full <- function(number_units, time_periods, group_number, group_te, time_of_treatment,
                     trend_vectors, group_level = NULL, exposure_list = NULL, group_share = "even",
                      s_d = 0, error_spread = 0) {
 
 # Error handling for invalid inputs and transformation of default values:
-  if (!is.numeric(number_observations) || length(number_observations) != 1 || number_observations <= 0 || number_observations %% 1 != 0) {
-    stop("The parameter 'number_observations' must be a single positive integer.")
+  if (!is.numeric(number_units) || length(number_units) != 1 || number_units <= 0 || number_units %% 1 != 0) {
+    stop("The parameter 'number_units' must be a single positive integer.")
   }
 
   if (!is.numeric(time_periods) || length(time_periods) != 1 || time_periods <= 0 || time_periods %% 1 != 0) {
@@ -161,12 +175,12 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
 
   if(isTRUE(group_share == "even")){
     # The split groups function can be found in utils.R
-    group_share = split_groups(number_observations, group_number)
+    group_share = split_groups(number_units, group_number)
   }
   else if(!is.numeric(group_share) || length(group_share) != group_number){
       stop("The parameter 'group_share' must be a numeric vector of length equal to 'group_number'.")
     }
-  else if(sum(group_share) != number_observations){
+  else if(sum(group_share) != number_units){
     stop("The groups in group_share do not sum up to the total number of observations")
   }
 
@@ -230,24 +244,24 @@ DGP_full <- function(number_observations, time_periods, group_number, group_te, 
     stop("The parameter 's_d' must be a single positive integer.")
   }
 
-  if (group_number > number_observations){
+  if (group_number > number_units){
     stop("Group number is greater than number of observations. There will be empty groups.")
   }
   # Actual function begins here
-  treatment_matrix <- treatment_dgp_hetero(number_observations, time_periods,
+  treatment_matrix <- treatment_dgp_hetero(number_units, time_periods,
                                            group_number, group_share, time_of_treatment,
                                            group_te, exposure_list)
 
   group_vector_long <- treatment_matrix$group
-  unit_vector <- unit_dgp_base(number_observations, time_periods, trend_vectors,
+  unit_vector <- unit_dgp_base(number_units, time_periods, trend_vectors,
                                group_vector_long , group_level, group_share)
 
   if (error_spread == 0){
-    error_vector <- error_dgp_base(number_observations, time_periods, s_d)
+    error_vector <- error_dgp_base(number_units, time_periods, s_d)
   }
 
   else{
-  error_vector <- error_dgp_spread(number_observations, time_periods, s_d = s_d, error_spread = error_spread)
+  error_vector <- error_dgp_spread(number_units, time_periods, s_d = s_d, error_spread = error_spread)
   }
   # Sum matrices function is in utils.R
   final_matrix <- sum_matrices(treatment_matrix, unit_vector, error_vector)
