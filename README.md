@@ -1,6 +1,6 @@
 # synthpanel
 
-The synthpanel packages offers three main functionalities:
+The synthpanel package offers three main functionalities:
 - Simulation of panel data with causal treatment effects.
 - Calculation of regression weights in order to estimate varying single-measure treatment effect aggregations.
 - Wrapper around the packages did, did2s, DIDmultiplegtDYN, didimputation, and fixest(+sunab), allowing to retrieve treatment effect estimats under unified syntax.
