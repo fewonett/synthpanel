@@ -5,7 +5,7 @@
 \title{Create a treatment vector, depending on time, group, and exposure.}
 \usage{
 treatment_dgp_hetero(
-  number_observations,
+  number_units,
   time_periods,
   group_number,
   group_share,

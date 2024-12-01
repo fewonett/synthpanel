@@ -199,7 +199,7 @@ DGP_full <- function(number_units, time_periods, group_number, group_te, time_of
   if (any(time_of_treatment > time_periods)) {
     stop("Elements in 'time_of_treatment' cannot be greater than 'time_periods'.")
   }
-  if ((!is.list(trend_vectors))&length(trend_vectors) == group_number){
+  if ((!is.list(trend_vectors))&length(trend_vectors) == time_periods){
     trend_vectors <- replicate(group_number, trend_vectors, simplify = FALSE)
   }
 
