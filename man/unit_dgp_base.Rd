@@ -5,7 +5,7 @@
 \title{Creates a small dataframe that allocates units into groups and adds the time trends}
 \usage{
 unit_dgp_base(
-  number_observations,
+  number_units,
   time_periods,
   trend_vectors,
   group_vector_long,

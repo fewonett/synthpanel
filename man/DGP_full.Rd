@@ -6,7 +6,7 @@
 effects between groups.}
 \usage{
 DGP_full(
-  number_observations,
+  number_units,
   time_periods,
   group_number,
   group_te,
@@ -20,7 +20,7 @@ DGP_full(
 )
 }
 \arguments{
-\item{number_observations}{The number of observations in the dataset.}
+\item{number_units}{The number of observations in the dataset.}
 
 \item{time_periods}{The number of time periods over which the observations are
 observed.}
