@@ -2,13 +2,7 @@
 
 
 
-#' Create simple time series plot:
-#'
-#' @param agg_data Aggregated plot Data
-#'
-#' @return A ggplot object
-#'
-#' @keywords Internal
+
 simple_ts_plot <- function(agg_data, demean) {
   # Create the plot
     if(demean){

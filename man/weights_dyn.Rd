@@ -14,8 +14,6 @@ weights_dyn(data, group, time, treat_indicator)
 \item{time}{The name of the time variable column}
 
 \item{treat_indicator}{The name of the treatment indicator column}
-
-\item{unit}{The unit variable name.}
 }
 \value{
 A numerical vector that contains the weights for each observation in the passed dataset

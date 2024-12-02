@@ -54,16 +54,11 @@ trend_linear_noisy <- function(time_periods, slope, noise_mean, noise_sd){
 #'
 #' @param time_periods The number of time periods over which the time trend should
 #' be generated.
-#' @param s_d The standard deviation of the normal distribution. The higher it is, the
-#' more volatile the trend.
-#'
+#' @param drift The expected value of the underlying normal distribution. If positive
+#' the trend will increase over time in expectation
+#' @param s_d The standard deviation of the underlying normal distribution
 #' @return A numerical vector of length time_periods
 #' @export
-#' @examples
-#' time_periods <- 5
-#' noise_sd <- 0.5
-#' trend_brownian_motion(time_periods)
-#'
 trend_brownian_motion <- function(time_periods, drift = 0, s_d = 1) {
   # Generate n-1 random normal increments with mean dirft and standard deviation s_d
   increments <- stats::rnorm(time_periods, mean = drift, sd = s_d)

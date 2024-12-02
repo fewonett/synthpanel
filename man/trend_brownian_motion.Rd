@@ -10,18 +10,14 @@ trend_brownian_motion(time_periods, drift = 0, s_d = 1)
 \item{time_periods}{The number of time periods over which the time trend should
 be generated.}
 
-\item{s_d}{The standard deviation of the normal distribution. The higher it is, the
-more volatile the trend.}
+\item{drift}{The expected value of the underlying normal distribution. If positive
+the trend will increase over time in expectation}
+
+\item{s_d}{The standard deviation of the underlying normal distribution}
 }
 \value{
 A numerical vector of length time_periods
 }
 \description{
 Create a time trend based on drifting brownian motion.
-}
-\examples{
-time_periods <- 5
-noise_sd <- 0.5
-trend_brownian_motion(time_periods)
-
 }
