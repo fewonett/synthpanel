@@ -1,9 +1,7 @@
 # This file contains the user facing functions responsible for the main DGP process.
 
 
-#' Create a treatment vector, depending on time, group, and exposure.
-#' @keywords Internal
-#'
+
 treatment_dgp_hetero <- function(number_units, time_periods, group_number,
                                  group_share, time_of_treatment, group_te, exposure_list) {
 
@@ -65,8 +63,6 @@ treatment_dgp_hetero <- function(number_units, time_periods, group_number,
 
 
 
-#' Creates a small dataframe that allocates units into groups and adds the time trends
-#' @keywords Internal
 unit_dgp_base <- function(number_units, time_periods, trend_vectors, group_vector_long,
                           group_level, group_share) {
   # Generate Y values based on the trend_vector
@@ -137,13 +133,13 @@ error_dgp_spread <- function(number_units, time_periods, s_d = 1, spread_dist = 
 #' Each vector should be of length time_periods - min(time_of_treatment).
 #' A vector c(1,0.5, 0, 0, (...)) would indicate a treatmente effect of 1* group_te in the
 #' treatment period, 0.5*group_te in the first period after treatment, and 0 after.
-#' @param group_share A list of length group_number, which indicates how many obsevations
+#' @param group_share A vector of length group_number, which indicates how many units
 #' are in each group. The list entries should add up to the total number of observations.
 #' The default "even" will create equally sized groups.
 #' @param trend_vectors A list of vectors indicating the time trend for each group.
 #' Each vector should be of length time_periods, and the list of length group_numbers.
 #' Alternatively a single vector can be passed - the function will use this time trend for all groups.
-#' Vectors of common time trends can conveniently be created with the inbuilt trend functions.
+#' Vectors of time trends can conveniently be created with the inbuilt trend functions.
 #' @param time_of_treatment A vector of length group_number, indicating in which period
 #' each group first receives treatment. Never treeated groups are marked with -1.
 #' @param group_level The level of Y at time 0. Note that the time trends can also
@@ -151,6 +147,8 @@ error_dgp_spread <- function(number_units, time_periods, s_d = 1, spread_dist = 
 #' @param s_d The standard deviation of the normal distribution each individual observation
 #' is drawn from. Note this is independent of group level noise, which may be introduced
 #' via the trend functions.
+#' @param error_spread The time constant error specific to each unit is drawn from
+#' a uniform distribution. error_spread defines the upper bound of that distribution.
 
 DGP_full <- function(number_units, time_periods, group_number, group_te, time_of_treatment,
                     trend_vectors, group_level = NULL, exposure_list = NULL, group_share = "even",

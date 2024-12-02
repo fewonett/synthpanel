@@ -18,6 +18,37 @@ get_all_ests(
   iteration = NA
 )
 }
+\arguments{
+\item{data}{A dataframe containing the panel dataset}
+
+\item{ests}{A vector containing all desired estimators. Defaults to all.
+Allternatively spcify as a subset of: c("twfe", "borus", "csa", "chaise", "gardner", "sunab", "wool")}
+
+\item{Y}{Name of the column containing the outcome variable}
+
+\item{treat}{Name of the column containing the treatment indicator}
+
+\item{time}{Name of the column containing the time period}
+
+\item{unit}{Name of the column containing the unit identifier}
+
+\item{group}{Name of the column containing the group identifier. In the context
+of this package a group is a set of units receiving treatment and the same time
+and experiencing the same treatment effects. You may specify several groups receiving
+treatment at the same time.}
+
+\item{control}{Define which control groups should be used in estimators which allow
+to differentiate: "notyettreated" or "nevertreated".}
+
+\item{aggregation}{Which treatment effect aggregation to compute: "simple", "group",
+or "dynamic".}
+
+\item{cluster_by}{Name of the column containing the variable to cluster by. By
+default standard errors a clustered at the unit level.}
+
+\item{iteration}{If specified will add a identifier to the outcome dataset, to
+keep track in repeated estimation.}
+}
 \description{
 Compute all estimates
 }

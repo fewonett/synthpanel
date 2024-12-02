@@ -2,7 +2,6 @@
 #' Calculate dynamic weights
 #'
 #' @param data The dataset.
-#' @param unit The unit variable name.
 #' @param group The name of the group variable column
 #' @param time The name of the time variable column
 #' @param treat_indicator The name of the treatment indicator column
@@ -10,7 +9,6 @@
 #' @return A numerical vector that contains the weights for each observation in the passed dataset
 #' @export
 #'
-
 weights_dyn <- function(data, group, time, treat_indicator){
 
   data <- data %>%

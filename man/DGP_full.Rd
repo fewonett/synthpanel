@@ -37,7 +37,7 @@ each group first receives treatment. Never treeated groups are marked with -1.}
 \item{trend_vectors}{A list of vectors indicating the time trend for each group.
 Each vector should be of length time_periods, and the list of length group_numbers.
 Alternatively a single vector can be passed - the function will use this time trend for all groups.
-Vectors of common time trends can conveniently be created with the inbuilt trend functions.}
+Vectors of time trends can conveniently be created with the inbuilt trend functions.}
 
 \item{group_level}{The level of Y at time 0. Note that the time trends can also
 introduce a Y level above 0, but the trend fucntions in this package do not.}
@@ -49,13 +49,16 @@ Each vector should be of length time_periods - min(time_of_treatment).
 A vector c(1,0.5, 0, 0, (...)) would indicate a treatmente effect of 1* group_te in the
 treatment period, 0.5*group_te in the first period after treatment, and 0 after.}
 
-\item{group_share}{A list of length group_number, which indicates how many obsevations
+\item{group_share}{A vector of length group_number, which indicates how many units
 are in each group. The list entries should add up to the total number of observations.
 The default "even" will create equally sized groups.}
 
 \item{s_d}{The standard deviation of the normal distribution each individual observation
 is drawn from. Note this is independent of group level noise, which may be introduced
 via the trend functions.}
+
+\item{error_spread}{The time constant error specific to each unit is drawn from
+a uniform distribution. error_spread defines the upper bound of that distribution.}
 }
 \description{
 A flexible DGP function to generate panel data with differing time trends and treatment
