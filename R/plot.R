@@ -5,32 +5,39 @@
 
 simple_ts_plot <- function(agg_data, demean) {
   # Create the plot
-    if(demean){
-      ts_plot <- ggplot2::ggplot(agg_data, ggplot2::aes(x = .data$time, y = .data$demean_Y,
-                                                        color = factor(.data$group),
-                                                        group = .data$group)) +
-        ggplot2::geom_line(linewidth = 0.5) +
-        ggplot2::geom_point(size = 1) +
-        ggplot2::labs(title = "Groups over time",
-                      x = "Time Period",
-                      y = "Average Outcome",
-                      color = "Group") +
-        ggplot2::theme_minimal() +
-        ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
-    }
-    else{
-    ts_plot <- ggplot2::ggplot(agg_data, ggplot2::aes(x = .data$time, y = .data$mean_Y,
-                                                    color = factor(.data$group),
-                                                    group = .data$group)) +
-    ggplot2::geom_line(linewidth = 0.5) +
-    ggplot2::geom_point(size = 1) +
-    ggplot2::labs(title = "Groups over time",
-                  x = "Time Period",
-                  y = "Average Outcome",
-                  color = "Group") +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
-    }
+  if (demean) {
+    ts_plot <- ggplot2::ggplot(agg_data, ggplot2::aes(
+      x = .data$time, y = .data$demean_Y,
+      color = factor(.data$group),
+      group = .data$group
+    )) +
+      ggplot2::geom_line(linewidth = 0.5) +
+      ggplot2::geom_point(size = 1) +
+      ggplot2::labs(
+        title = "Groups over time",
+        x = "Time Period",
+        y = "Average Outcome",
+        color = "Group"
+      ) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+  } else {
+    ts_plot <- ggplot2::ggplot(agg_data, ggplot2::aes(
+      x = .data$time, y = .data$mean_Y,
+      color = factor(.data$group),
+      group = .data$group
+    )) +
+      ggplot2::geom_line(linewidth = 0.5) +
+      ggplot2::geom_point(size = 1) +
+      ggplot2::labs(
+        title = "Groups over time",
+        x = "Time Period",
+        y = "Average Outcome",
+        color = "Group"
+      ) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+  }
 
   return(ts_plot)
 }
@@ -48,8 +55,7 @@ simple_ts_plot <- function(agg_data, demean) {
 #' @return Returns a ggplot object of the average Y over time by group, or the aggregated data if `return_data` is set to `TRUE`.
 #' @export
 #'
-time_series_plot <- function(data,Y = "Y", time = "time", group = "group", demean = FALSE, return_data = FALSE){
-
+time_series_plot <- function(data, Y = "Y", time = "time", group = "group", demean = FALSE, return_data = FALSE) {
   # Ensure 'time' and 'Y' are numeric
   if (!is.numeric(data$time)) {
     stop("'time' column must be numeric.")
@@ -62,7 +68,7 @@ time_series_plot <- function(data,Y = "Y", time = "time", group = "group", demea
   agg_data <- aggregate_plot_data(data)
 
   # return only the data if return data is true:
-  if (return_data){
+  if (return_data) {
     return(agg_data)
   }
 
