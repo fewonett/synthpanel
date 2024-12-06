@@ -25,24 +25,31 @@ treatment_dgp_hetero <- function(number_units, time_periods, group_number,
   # Create exposure vector
   exposure_periods <- ifelse(is_treated & time_since_treatment >= 0, time_since_treatment + 1, 0)
 
-  # Shorten length of exposure vectors for later treated groups to correct length
-  group_exposure_lengths <- sapply(exposure_list, length)
-  capped_exposure_periods <- pmin(exposure_periods, group_exposure_lengths[group_indices])
-  max_exposure_length <- max(group_exposure_lengths)
 
-  # Fill shortened values with 0
+  # Fill shorter exposure vectors up to maximum length. If vector is too short
+  # (shorter than the periods the respective group is exposed), the function will
+  # fill in the last entry in the exposure factor.
+  # NOTE: Right now DGP_full() forces to pass vectors of max_exposure length and the
+  # following code block is therefore not strictly necessary. In the future
+  # this may be adjusted for easier usage.
+  max_exposure <- max(exposure_periods)
   exposure_vectors_padded <- lapply(exposure_list, function(x) {
-    length(x) <- max_exposure_length
-    x[is.na(x)] <- 0
+    max_val <- x[length(x)]
+    length(x) <- max_exposure
+    x[is.na(x)] <- max_val
     return(x)
   })
 
+  # Group exposure matrix: Column = group, row = exposure
   exposure_matrix <- do.call(cbind, exposure_vectors_padded)
-  exposure_factors <- numeric(nrow(treatment_matrix))
 
-  # Gather indices
+  # Assign exposure factor as vector of 0s
+  exposure_factors <- numeric(nrow(treatment_matrix))
+  # Gather indices of positive exposure observations
   exposure_positive <- exposure_periods > 0
-  exposure_indices <- capped_exposure_periods[exposure_positive]
+
+  # Now gather indices for retrieving relevant values from the exposure matrix
+  exposure_indices <- exposure_periods[exposure_positive]
   group_indices_positive <- group_indices[exposure_positive]
 
   # Create vector of exposure factors
