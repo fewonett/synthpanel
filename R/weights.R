@@ -1,4 +1,3 @@
-
 #' Calculate dynamic weights
 #'
 #' @param data The dataset.
@@ -9,8 +8,7 @@
 #' @return A numerical vector that contains the weights for each observation in the passed dataset
 #' @export
 #'
-weights_dyn <- function(data, group, time, treat_indicator){
-
+weights_dyn <- function(data, group, time, treat_indicator) {
   data <- data %>%
     dplyr::group_by(.data[[group]]) %>%
     dplyr::mutate(
@@ -61,8 +59,7 @@ weights_dyn <- function(data, group, time, treat_indicator){
 #' @export
 #'
 
-weights_group <- function(data, unit, group, time, treat_indicator){
-
+weights_group <- function(data, unit, group, time, treat_indicator) {
   n_treated_units <- data %>%
     dplyr::filter(.data[[treat_indicator]] == 1) %>%
     dplyr::summarise(n_treated_units = dplyr::n_distinct(.data[[unit]])) %>%
@@ -73,11 +70,13 @@ weights_group <- function(data, unit, group, time, treat_indicator){
     dplyr::mutate(max_time = max(.data[[time]])) %>%
     dplyr::group_by(.data[[group]]) %>%
     dplyr::mutate(first_treat = ifelse(any(.data[[treat_indicator]] == 1),
-                                       min(.data[[time]][.data[[treat_indicator]] == 1]),
-                                       0)) %>%
+      min(.data[[time]][.data[[treat_indicator]] == 1]),
+      0
+    )) %>%
     dplyr::mutate(w_g = ifelse(.data[[treat_indicator]] == 0,
-                               1,
-                               1 / (1 + .data$max_time - .data$first_treat))) %>%
+      1,
+      1 / (1 + .data$max_time - .data$first_treat)
+    )) %>%
     dplyr::ungroup()
 
   data$w_g <- data$w_g / n_treated_units

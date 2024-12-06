@@ -4,7 +4,6 @@
 
 treatment_dgp_hetero <- function(number_units, time_periods, group_number,
                                  group_share, time_of_treatment, group_te, exposure_list) {
-
   groups <- rep(1:group_number, group_share)
 
   treatment_matrix <- data.frame(
@@ -108,8 +107,7 @@ error_dgp_base <- function(number_units, time_periods, s_d) {
 # Simulate error with unit serial correlation:
 error_dgp_spread <- function(number_units, time_periods, s_d = 1, spread_dist = "uniform",
                              error_spread = 0) {
-  initial_spread <- switch(
-    spread_dist,
+  initial_spread <- switch(spread_dist,
     "uniform" = stats::runif(number_units, -error_spread, error_spread),
     "normal" = stats::rnorm(number_units, 0, error_spread),
     stop("Invalid spread_dist value")
@@ -158,10 +156,9 @@ error_dgp_spread <- function(number_units, time_periods, s_d = 1, spread_dist = 
 #' a uniform distribution. error_spread defines the upper bound of that distribution.
 
 DGP_full <- function(number_units, time_periods, group_number, group_te, time_of_treatment,
-                    trend_vectors, group_level = NULL, exposure_list = NULL, group_share = "even",
+                     trend_vectors, group_level = NULL, exposure_list = NULL, group_share = "even",
                      s_d = 0, error_spread = 0) {
-
-# Error handling for invalid inputs and transformation of default values:
+  # Error handling for invalid inputs and transformation of default values:
   if (!is.numeric(number_units) || length(number_units) != 1 || number_units <= 0 || number_units %% 1 != 0) {
     stop("The parameter 'number_units' must be a single positive integer.")
   }
@@ -178,14 +175,12 @@ DGP_full <- function(number_units, time_periods, group_number, group_te, time_of
     stop("The parameter 'group_te' must be a numeric vector of length equal to 'group_number'.")
   }
 
-  if(isTRUE(group_share == "even")){
+  if (isTRUE(group_share == "even")) {
     # The split groups function can be found in utils.R
-    group_share = split_groups(number_units, group_number)
-  }
-  else if(!is.numeric(group_share) || length(group_share) != group_number){
-      stop("The parameter 'group_share' must be a numeric vector of length equal to 'group_number'.")
-    }
-  else if(sum(group_share) != number_units){
+    group_share <- split_groups(number_units, group_number)
+  } else if (!is.numeric(group_share) || length(group_share) != group_number) {
+    stop("The parameter 'group_share' must be a numeric vector of length equal to 'group_number'.")
+  } else if (sum(group_share) != number_units) {
     stop("The groups in group_share do not sum up to the total number of observations")
   }
 
@@ -204,7 +199,7 @@ DGP_full <- function(number_units, time_periods, group_number, group_te, time_of
   if (any(time_of_treatment > time_periods)) {
     stop("Elements in 'time_of_treatment' cannot be greater than 'time_periods'.")
   }
-  if ((!is.list(trend_vectors))&length(trend_vectors) == time_periods){
+  if ((!is.list(trend_vectors)) & length(trend_vectors) == time_periods) {
     trend_vectors <- replicate(group_number, trend_vectors, simplify = FALSE)
   }
 
@@ -218,16 +213,15 @@ DGP_full <- function(number_units, time_periods, group_number, group_te, time_of
     }
   }
 
-  max_length = time_periods - min(time_of_treatment[time_of_treatment>0]) + 1
-  if(is.null(exposure_list)){
-    exposure_te = rep(1, max_length)
+  max_length <- time_periods - min(time_of_treatment[time_of_treatment > 0]) + 1
+  if (is.null(exposure_list)) {
+    exposure_te <- rep(1, max_length)
     exposure_list <- replicate(group_number, exposure_te, simplify = FALSE)
-  }
-  else if(is.vector(exposure_list)&length(exposure_list) == max_length){
+  } else if (is.vector(exposure_list) & length(exposure_list) == max_length) {
     exposure_list <- replicate(group_number, exposure_list, simplify = FALSE)
   }
 
-  if ((!is.list(exposure_list) || length(exposure_list) != group_number)){
+  if ((!is.list(exposure_list) || length(exposure_list) != group_number)) {
     stop("Exposure_te must be a list of vectors for each group or an individual vector")
   }
   for (i in seq_along(exposure_list)) {
@@ -238,10 +232,9 @@ DGP_full <- function(number_units, time_periods, group_number, group_te, time_of
   }
 
 
-  if(is.null(group_level)){
-    group_level = rep(0, group_number)
-  }
-  else if (!is.numeric(group_level) || length(group_level) != group_number) {
+  if (is.null(group_level)) {
+    group_level <- rep(0, group_number)
+  } else if (!is.numeric(group_level) || length(group_level) != group_number) {
     stop("The parameter 'group_level' must be a numeric vector of length equal to 'group_number'.")
   }
 
@@ -249,24 +242,26 @@ DGP_full <- function(number_units, time_periods, group_number, group_te, time_of
     stop("The parameter 's_d' must be a single positive integer.")
   }
 
-  if (group_number > number_units){
+  if (group_number > number_units) {
     stop("Group number is greater than number of observations. There will be empty groups.")
   }
   # Actual function begins here
-  treatment_matrix <- treatment_dgp_hetero(number_units, time_periods,
-                                           group_number, group_share, time_of_treatment,
-                                           group_te, exposure_list)
+  treatment_matrix <- treatment_dgp_hetero(
+    number_units, time_periods,
+    group_number, group_share, time_of_treatment,
+    group_te, exposure_list
+  )
 
   group_vector_long <- treatment_matrix$group
-  unit_vector <- unit_dgp_base(number_units, time_periods, trend_vectors,
-                               group_vector_long , group_level, group_share)
+  unit_vector <- unit_dgp_base(
+    number_units, time_periods, trend_vectors,
+    group_vector_long, group_level, group_share
+  )
 
-  if (error_spread == 0){
+  if (error_spread == 0) {
     error_vector <- error_dgp_base(number_units, time_periods, s_d)
-  }
-
-  else{
-  error_vector <- error_dgp_spread(number_units, time_periods, s_d = s_d, error_spread = error_spread)
+  } else {
+    error_vector <- error_dgp_spread(number_units, time_periods, s_d = s_d, error_spread = error_spread)
   }
   # Sum matrices function is in utils.R
   final_matrix <- sum_matrices(treatment_matrix, unit_vector, error_vector)

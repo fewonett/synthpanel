@@ -13,7 +13,7 @@ aggregate_plot_data <- function(data) {
   # Proceed with the pipeline if checks are passed
   agg_data <- data %>%
     dplyr::group_by(.data$time, .data$group) %>%
-    dplyr::summarize(mean_Y = mean(.data$Y), .groups = 'drop') %>%
+    dplyr::summarize(mean_Y = mean(.data$Y), .groups = "drop") %>%
     dplyr::group_by(.data$group) %>%
     # Demean by first period value within each group
     dplyr::mutate(demean_Y = .data$mean_Y - mean(.data$mean_Y[.data$time == 1]))
@@ -28,8 +28,8 @@ sum_matrices <- function(treatment_matrix, unit_vector, error_vector) {
   # Combine data frames using cbind with drop = FALSE to preserve names
   final_matrix <- cbind(
     treatment_matrix,
-    unit_vector[ , setdiff(names(unit_vector), c("unit", "time", "group")), drop = FALSE ],
-    error_vector[ , setdiff(names(error_vector), c("unit", "time")), drop = FALSE ]
+    unit_vector[, setdiff(names(unit_vector), c("unit", "time", "group")), drop = FALSE],
+    error_vector[, setdiff(names(error_vector), c("unit", "time")), drop = FALSE]
   )
 
   # Adjust Y by adding treatment_effect and error
@@ -40,19 +40,16 @@ sum_matrices <- function(treatment_matrix, unit_vector, error_vector) {
 
 
 #' @keywords Internal
-split_groups <- function (nobs, group_number){
+split_groups <- function(nobs, group_number) {
   # Define minimum number of "members" in each group
-  min_members <- floor(nobs/group_number)
+  min_members <- floor(nobs / group_number)
   # Create baseline vector with minimum member number for each group
   group_vec <- rep(min_members, group_number)
   # The first n elements in the vector that 1 another observation should be added
   # to
   obs_to_add <- nobs %% group_number
-  if (obs_to_add > 0){
+  if (obs_to_add > 0) {
     group_vec[1:obs_to_add] <- group_vec[1:obs_to_add] + 1
   }
   return(group_vec)
 }
-
-
-
