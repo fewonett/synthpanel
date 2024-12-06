@@ -157,7 +157,8 @@ get_gardner <- function(data, Y, treat, time, unit, group, cluster_by = NA, weig
         data,
         yname = Y, first_stage = ~ 0 | unit + time,
         second_stage = ~ treat, treatment = treat,
-        cluster_var = cluster_by
+        cluster_var = cluster_by,
+        verbose = FALSE
       )
     })["elapsed"]
   }else{
@@ -167,7 +168,8 @@ get_gardner <- function(data, Y, treat, time, unit, group, cluster_by = NA, weig
         yname = Y, first_stage = ~ 0 | unit + time,
         second_stage = ~ treat, treatment = treat,
         cluster_var = cluster_by,
-        weights = weights
+        weights = weights,
+        verbose = FALSE
       )
     })["elapsed"]
   }
