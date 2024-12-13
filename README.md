@@ -17,6 +17,7 @@ remove.packages("DIDmultiplegtDYN")
 # Install alternate version to avoid rjava dependency
 devtools::install_github("chaisemartinPackages/did_multiplegt_dyn/no_xlsx/DIDmultiplegtDYN")
 ```
+Feel free to open an issue or reach out to me under nettfewo@gmail.com.
 ## Quick guide to the package
 Let's simulate a dataset with heterogeneus treatment effects across units and within units over time:
 First, we need to define the necessary parameters:
