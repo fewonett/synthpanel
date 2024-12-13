@@ -10,7 +10,13 @@ I recommend to install via devtools:
 ```
 devtools::install_github("fewonett/synthpanel")
 ```
-
+As of right now, the package depends on the [DIDmultiplegtDYN]([url](https://github.com/chaisemartinPackages/did_multiplegt_dyn)) package which in turn depends on rjava. This dependency may cause issues for some users. If this is the case for you, consider installing the alternative noxlsx version of DIDmultiplegtDYN via:
+```
+# Remove "normal" version, if installed:
+remove.packages("DIDmultiplegtDYN")
+# Install alternate version to avoid rjava dependency
+devtools::install_github("chaisemartinPackages/did_multiplegt_dyn/no_xlsx/DIDmultiplegtDYN")
+```
 ## Quick guide to the package
 Let's simulate a dataset with heterogeneus treatment effects across units and within units over time:
 First, we need to define the necessary parameters:
